@@ -39,22 +39,61 @@ else:
 
 
 # create the tabs, but don't display yet
-about_tab = AboutTab()
-config_tab = ConfigTab()
+# about_tab = AboutTab()
+# config_tab = ConfigTab()
 
-xml_file = os.path.join('data', 'PhysiCell_settings.xml')
+# xml_file = os.path.join('data', 'PhysiCell_settings.xml')
+# full_xml_filename = os.path.abspath(xml_file)
+
+# tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
+# xml_root = tree.getroot()
+
+# microenv_tab = MicroenvTab()
+# user_tab = UserTab()
+
+# if xml_root.find('.//cell_definitions'):
+#     cell_types_tab = CellTypesTab()
+
+# # svg = SVGTab()
+# sub = SubstrateTab()
+# animate_tab = AnimateTab()
+
+
+home = '/content'
+os.chdir(home)
+
+# Change to the Motility_Training_App directory
+# Change to the tr_Volume directory
+os.chdir('Death_Models_Training')
+
+# Change to the data directory
+os.chdir('data')
+
+# Define the path to the XML file
+xml_file = 'PhysiCell_settings.xml'
 full_xml_filename = os.path.abspath(xml_file)
 
-tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
+# Check if the file exists
+if not os.path.isfile(full_xml_filename):
+    # Handle the error: copy the file from another location or provide an error message
+    print(f"File not found: {full_xml_filename}")
+    
+    # Example: Copy the file from another location
+    source_file_path = '../data/PhysiCell_settings.xml'
+    if os.path.isfile(source_file_path):
+        shutil.copy(source_file_path, full_xml_filename)
+        print(f"Copied {source_file_path} to {full_xml_filename}")
+    else:
+        raise FileNotFoundError(f"Source file not found: {source_file_path}")
+
+# Proceed with your code
+tree = ET.parse(full_xml_filename)
 xml_root = tree.getroot()
 
+about_tab = AboutTab()
+config_tab = ConfigTab()
 microenv_tab = MicroenvTab()
 user_tab = UserTab()
-
-if xml_root.find('.//cell_definitions'):
-    cell_types_tab = CellTypesTab()
-
-# svg = SVGTab()
 sub = SubstrateTab()
 animate_tab = AnimateTab()
 
@@ -437,3 +476,9 @@ sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size
 # print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
 # print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
 #sub.update_params(config_tab)
+config_file_path = os.path.join('../data', 'PhysiCell_settings.xml')
+if not os.path.isfile(config_file_path):
+    raise FileNotFoundError(f"No such file or directory: '{config_file_path}'")
+fill_gui_params(config_file_path)
+output_dir = "tmpdir"
+sub.update_dropdown_fields("data")
