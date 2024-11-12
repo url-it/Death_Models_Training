@@ -35,39 +35,43 @@ else:
     hublib_flag = False
 
 
-# join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
+# # Change to the home directory
+# home = '/content'
+# os.chdir(home)
 
+# # Change to the Motility_Training_App directory
+# os.chdir('Motility_Training_App')
 
-# create the tabs, but don't display yet
-# about_tab = AboutTab()
-# config_tab = ConfigTab()
+# # Change to the data directory
+# os.chdir('data')
 
-# xml_file = os.path.join('data', 'PhysiCell_settings.xml')
+# # Define the path to the XML file
+# xml_file = 'PhysiCell_settings.xml'
 # full_xml_filename = os.path.abspath(xml_file)
 
-# tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
-# xml_root = tree.getroot()
+# # Check if the file exists
+# if not os.path.isfile(full_xml_filename):
+#     # Handle the error: copy the file from another location or provide an error message
+#     print(f"File not found: {full_xml_filename}")
+    
+#     # Example: Copy the file from another location
+#     source_file_path = '/path/to/source/PhysiCell_settings.xml'
+#     if os.path.isfile(source_file_path):
+#         shutil.copy(source_file_path, full_xml_filename)
+#         print(f"Copied {source_file_path} to {full_xml_filename}")
+#     else:
+#         raise FileNotFoundError(f"Source file not found: {source_file_path}")
 
-# microenv_tab = MicroenvTab()
-# user_tab = UserTab()
 
-# if xml_root.find('.//cell_definitions'):
-#     cell_types_tab = CellTypesTab()
-
-# # svg = SVGTab()
-# sub = SubstrateTab()
-# animate_tab = AnimateTab()
-
-
+# join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
+# Change to the home directory
 home = '/content'
 os.chdir(home)
 
-# Change to the Motility_Training_App directory
-# Change to the tr_Volume directory
 os.chdir('Death_Models_Training')
 
 # Change to the data directory
-os.chdir('../data')
+os.chdir('data')
 
 # Define the path to the XML file
 xml_file = 'PhysiCell_settings.xml'
@@ -98,8 +102,33 @@ sub = SubstrateTab()
 animate_tab = AnimateTab()
 
 nanoHUB_flag = False
-if( 'HOME' in os.environ.keys() ):
+if 'HOME' in os.environ.keys():
     nanoHUB_flag = "home/nanohub" in os.environ['HOME']
+
+
+# # create the tabs, but don't display yet
+# about_tab = AboutTab()
+# config_tab = ConfigTab()
+
+# xml_file = os.path.join('../data', 'PhysiCell_settings.xml')
+# full_xml_filename = os.path.abspath(xml_file)
+
+# tree = ET.parse(full_xml_filename)  # this file cannot be overwritten; part of tool distro
+# xml_root = tree.getroot()
+
+# microenv_tab = MicroenvTab()
+# user_tab = UserTab()
+
+# if xml_root.find('.//cell_definitions'):
+#     cell_types_tab = CellTypesTab()
+
+# # svg = SVGTab()
+# sub = SubstrateTab()
+# animate_tab = AnimateTab()
+
+# nanoHUB_flag = False
+# if( 'HOME' in os.environ.keys() ):
+#     nanoHUB_flag = "home/nanohub" in os.environ['HOME']
 
 
 # callback when user selects a cached run in the 'Load Config' dropdown widget.
@@ -183,12 +212,12 @@ def write_config_file(name):
     sub.update_params(config_tab, user_tab)
     # sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
     # sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
-    # print("Death_Models_Training.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
+    # print("tr_Volume.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
 
 
 # callback from write_config_button
 # def write_config_file_cb(b):
-#     path_to_share = os.path.join('~', '.local','share','Death_Models_Training')
+#     path_to_share = os.path.join('~', '.local','share','tr_Volume')
 #     dirname = os.path.expanduser(path_to_share)
 
 #     val = write_config_box.value
@@ -378,29 +407,39 @@ def run_button_cb(s):
     # print("new_config_file = ", new_config_file)
 #    write_config_file(new_config_file)
 
-    # make sure we are where we started
-    os.chdir(homedir)
-
-    # remove any previous data
-    # NOTE: this dir name needs to match the <folder>  in /data/<config_file.xml>
-    os.system('rm -rf tmpdir*')
-    if os.path.isdir('tmpdir'):
-        # something on NFS causing issues...
-        tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
-        shutil.move('tmpdir', tname)
-    os.makedirs('tmpdir')
-
-    # write the default config file to tmpdir
-    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
-    write_config_file(new_config_file)  
-
-    tdir = os.path.abspath('tmpdir')
-    os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
-    # svg.update(tdir)
-    # sub.update_params(config_tab)
+    tdir = "tmpdir"
     sub.update(tdir)
 
-    subprocess.Popen(["../bin/myproj", "config.xml"])
+    executable_path = os.path.abspath(os.path.join('..', 'bin', 'myproj'))
+    if not os.path.isfile(executable_path):
+        raise FileNotFoundError(f"No such file or directory: '{executable_path}'")
+
+    subprocess.Popen([executable_path, "config.xml"])
+
+
+
+    # os.chdir(homedir)
+
+    # # remove any previous data
+    # # NOTE: this dir name needs to match the <folder>  in /data/<config_file.xml>
+    # os.system('rm -rf tmpdir*')
+    # if os.path.isdir('tmpdir'):
+    #     # something on NFS causing issues...
+    #     tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
+    #     shutil.move('tmpdir', tname)
+    # os.makedirs('tmpdir')
+
+    # # write the default config file to tmpdir
+    # new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
+    # write_config_file(new_config_file)  
+
+    # tdir = os.path.abspath('tmpdir')
+    # os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
+    # # svg.update(tdir)
+    # # sub.update_params(config_tab)
+    # sub.update(tdir)
+
+    # subprocess.Popen(["../bin/myproj", "config.xml"])
 
 
 #-------------------------------------------------
@@ -408,14 +447,15 @@ if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
                         done_func=run_done_func,
-                        cachename='Death_Models_Training',
+                        cachename='Motility_Training_App',
                         showcache=False,
                         outcb=outcb)
 else:
-    if (hublib_flag):
+    # if (hublib_flag):
+    if False:
         run_button = RunCommand(start_func=run_sim_func,
                             done_func=run_done_func,
-                            cachename='Death_Models_Training',
+                            cachename=None,
                             showcache=False,
                             outcb=outcb)  
     else:
@@ -427,33 +467,29 @@ else:
         run_button.on_click(run_button_cb)
 
 
-if nanoHUB_flag or hublib_flag:
-    read_config = widgets.Dropdown(
-        description='Load Config',
-        options=get_config_files(),
-        tooltip='Config File or Previous Run',
-    )
-    read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
-    read_config.observe(read_config_cb, names='value') 
+
+# if nanoHUB_flag or hublib_flag:
+#     read_config = widgets.Dropdown(
+#         description='Load Config',
+#         options=get_config_files(),
+#         tooltip='Config File or Previous Run',
+#     )
+#     read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
+#     read_config.observe(read_config_cb, names='value') 
 
 tab_height = 'auto'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
-
-if xml_root.find('.//cell_definitions'):
-    titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Cell Types', 'Out: Plots', 'Animate']
-    tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, cell_types_tab.tab, sub.tab, animate_tab.tab],
-                   _titles={i: t for i, t in enumerate(titles)},
-                   layout=tab_layout)
-else:
-    titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Plots', 'Animate']
-    tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, sub.tab, animate_tab.tab],
+#titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Cell Plots', 'Out: Substrate Plots']
+titles = ['About', 'Config Basics', 'Microenvironment', 'User Params', 'Out: Plots']
+#tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, svg.tab, sub.tab],
+tabs = widgets.Tab(children=[about_tab.tab, config_tab.tab, microenv_tab.tab, user_tab.tab, sub.tab],
                    _titles={i: t for i, t in enumerate(titles)},
                    layout=tab_layout)
 
 homedir = os.getcwd()
 
-tool_title = widgets.Label(r'\(\textbf{Death_Models_Training}\)')
-if nanoHUB_flag or hublib_flag:
+tool_title = widgets.Label('Death_Models_Training')
+if False:
     # define this, but don't use (yet)
     remote_cb = widgets.Checkbox(indent=False, value=False, description='Submit as Batch Job to Clusters/Grid')
 
@@ -463,7 +499,7 @@ if nanoHUB_flag or hublib_flag:
 else:
     top_row = widgets.HBox(children=[tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button])
-    fill_gui_params("data/PhysiCell_settings.xml")
+    fill_gui_params("../data/PhysiCell_settings.xml")
 
 
 # pass in (relative) directory where output data is located
@@ -471,11 +507,12 @@ output_dir = "tmpdir"
 # svg.update(output_dir)
 
 sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size...>" stdout!
-# animate_tab.update_dropdown_fields("data")   
 
 # print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
 # print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
 #sub.update_params(config_tab)
+
+# The file is not being PhysiCell_settings.xml found in Colab environment so we need to add this
 config_file_path = os.path.join('../data', 'PhysiCell_settings.xml')
 if not os.path.isfile(config_file_path):
     raise FileNotFoundError(f"No such file or directory: '{config_file_path}'")
