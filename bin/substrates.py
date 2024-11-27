@@ -79,7 +79,7 @@ class SubstrateTab(object):
         # self.x_range = 2000.
         # self.y_range = 2000.
 
-        self.show_nucleus = False
+        self.show_nucleus = True
         self.show_edge = True
 
         # Paul's additions in Nov 2020
@@ -122,7 +122,7 @@ class SubstrateTab(object):
         self.i_plot.layout.height = svg_plot_size
 
         self.fontsize = 20
-
+        self.colab_flag = True
 
             # description='# cell frames',
         self.max_frames = BoundedIntText(
@@ -161,7 +161,7 @@ class SubstrateTab(object):
         self.cmap_fixed_toggle = Checkbox(
             description='Fixed substrate range?',
             disabled=False,
-            value=True,
+            # value=True,
 #           layout=Layout(width=constWidth2),
         )
         self.cmap_fixed_toggle.observe(self.mcds_field_cb)
@@ -428,8 +428,27 @@ class SubstrateTab(object):
                             display='flex')) 
         # row2 = HBox( [row2a, self.substrates_toggle, self.grid_toggle])
         row2 = HBox( [row2a, Label('.....'), row2b])
+        if self.colab_flag:
+            self.download_button = Button(
+                description='Download mcds.zip',
+                button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='Download data',
+            )
+            self.download_button.on_click(self.download_local_cb)
 
-        if (hublib_flag):
+            self.download_svg_button = Button(
+                description='Download svg.zip',
+                button_style='success',  # 'success', 'info', 'warning', 'danger' or ''
+                tooltip='Download data',
+            )
+            self.download_svg_button.on_click(self.download_local_svg_cb)
+
+            download_row = HBox([self.download_button, self.download_svg_button])
+            # box_layout = Layout(border='0px solid')
+            controls_box = VBox([row1, row2])  # ,width='50%', layout=box_layout)
+            self.tab = VBox([controls_box, self.i_plot, download_row])
+
+        elif (hublib_flag):
             self.download_button = Download('mcds.zip', style='warning', icon='cloud-download', 
                                                 tooltip='Download data', cb=self.download_cb)
 
@@ -599,6 +618,28 @@ class SubstrateTab(object):
                 last_file = substrate_files[-1]
                 self.max_frames.value = int(last_file[-12:-4])
 
+    def download_local_svg_cb(self,s):
+        file_str = os.path.join(self.output_dir, '*.svg')
+        # print('zip up all ',file_str)
+        with zipfile.ZipFile('svg.zip', 'w') as myzip:
+            for f in glob.glob(file_str):
+                myzip.write(f, os.path.basename(f))   # 2nd arg avoids full filename path in the archive
+
+        if self.colab_flag:
+            files.download('svg.zip')
+
+    def download_local_cb(self,s):
+        file_xml = os.path.join(self.output_dir, '*.xml')
+        file_mat = os.path.join(self.output_dir, '*.mat')
+        # print('zip up all ',file_str)
+        with zipfile.ZipFile('mcds.zip', 'w') as myzip:
+            for f in glob.glob(file_xml):
+                myzip.write(f, os.path.basename(f)) # 2nd arg avoids full filename path in the archive
+            for f in glob.glob(file_mat):
+                myzip.write(f, os.path.basename(f))
+
+        if self.colab_flag:
+            files.download('mcds.zip')
     def download_svg_cb(self):
         file_str = os.path.join(self.output_dir, '*.svg')
         # print('zip up all ',file_str)
