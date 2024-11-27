@@ -31,6 +31,11 @@ if platform.system() != 'Windows':
 else:
     hublib_flag = False
 
+try:
+    from google.colab import files
+except:
+    pass
+
 #warnings.warn(message, mplDeprecation, stacklevel=1)
 warnings.filterwarnings("ignore")
 
@@ -117,6 +122,7 @@ class SubstrateTab(object):
         self.i_plot.layout.height = svg_plot_size
 
         self.fontsize = 20
+
 
             # description='# cell frames',
         self.max_frames = BoundedIntText(
@@ -1162,7 +1168,7 @@ class SubstrateTab(object):
         # oxy_ax = self.fig.add_subplot(grid[3:4, 0:1])  # nrows, ncols
         # x = np.linspace(0, 500)
         # oxy_ax.plot(x, 300*np.sin(x))
-
+        plt.show()   # rwh: for Colab
     #---------------------------------------------------------------------------
     # def plot_plots(self, frame):
     #     # if (self.first_time):
