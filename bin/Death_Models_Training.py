@@ -11,6 +11,11 @@ from about import AboutTab
 from config import ConfigTab
 from microenv_params import MicroenvTab
 from user_params import UserTab
+from substrates import SubstrateTab
+from pathlib import Path
+import platform
+import subprocess
+from debug import debug_view
 try:
     from cell_types import CellTypesTab
 except:
@@ -65,38 +70,16 @@ else:
 
 
 # join_our_list = "(Join/ask questions at https://groups.google.com/forum/#!forum/physicell-users)\n"
-# Change to the home directory
-home = '/content'
-os.chdir(home)
-
-os.chdir('Death_Models_Training')
-
-# Change to the data directory
-os.chdir('data')
-
-# Define the path to the XML file
-xml_file = 'PhysiCell_settings.xml'
-full_xml_filename = os.path.abspath(xml_file)
-
-# Check if the file exists
-if not os.path.isfile(full_xml_filename):
-    # Handle the error: copy the file from another location or provide an error message
-    print(f"File not found: {full_xml_filename}")
-    
-    # Example: Copy the file from another location
-    source_file_path = '../data/PhysiCell_settings.xml'
-    if os.path.isfile(source_file_path):
-        shutil.copy(source_file_path, full_xml_filename)
-        print(f"Copied {source_file_path} to {full_xml_filename}")
-    else:
-        raise FileNotFoundError(f"Source file not found: {source_file_path}")
-
 # Proceed with your code
-tree = ET.parse(full_xml_filename)
-xml_root = tree.getroot()
 
 about_tab = AboutTab()
 config_tab = ConfigTab()
+
+xml_file = os.path.join('data', 'PhysiCell_settings.xml')
+full_xml_filename = os.path.abspath(xml_file)
+
+tree = ET.parse(full_xml_filename)
+xml_root = tree.getroot()
 microenv_tab = MicroenvTab()
 user_tab = UserTab()
 sub = SubstrateTab()
@@ -291,6 +274,15 @@ def fill_gui_params(config_file):
     if xml_root.find('.//cell_definitions'):
         cell_types_tab.fill_gui(xml_root)
 
+def run_done_func_colab(s, rdir):
+    global run_button
+    with debug_view:
+        print('run_done_func: results in', rdir)
+    
+    sub.update(rdir)
+    run_button.description = "Run"
+    run_button.button_style='success'
+
 
 def run_done_func(s, rdir):
     # with debug_view:
@@ -309,7 +301,7 @@ def run_done_func(s, rdir):
     # new results are available, so update dropdown
     # with debug_view:
     #     print('run_done_func: ---- before updating read_config.options')
-    read_config.options = get_config_files()
+    # read_config.options = get_config_files()
     # with debug_view:
     #     print('run_done_func: ---- after updating read_config.options')
 
@@ -415,8 +407,10 @@ def run_button_cb(s):
     if not os.path.isfile(executable_path):
         raise FileNotFoundError(f"No such file or directory: '{executable_path}'")
 
-    subprocess.Popen([executable_path, "config.xml"])
-
+    run_button.description = "WAIT..."
+    subprocess.run(["../bin/myproj", "config.xml"])
+    sub.max_frames.value = int(config_tab.tmax.value / config_tab.svg_interval.value)    # 42
+    run_button.description = "Run"
 
 
     # os.chdir(homedir)
@@ -455,7 +449,7 @@ else:
     # if (hublib_flag):
     if False:
         run_button = RunCommand(start_func=run_sim_func,
-                            done_func=run_done_func,
+                            done_func=run_done_func_colab,
                             cachename=None,
                             showcache=False,
                             outcb=outcb)  
@@ -469,14 +463,14 @@ else:
 
 
 
-# if nanoHUB_flag or hublib_flag:
-#     read_config = widgets.Dropdown(
-#         description='Load Config',
-#         options=get_config_files(),
-#         tooltip='Config File or Previous Run',
-#     )
-#     read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
-#     read_config.observe(read_config_cb, names='value') 
+if nanoHUB_flag or hublib_flag:
+    read_config = widgets.Dropdown(
+        description='Load Config',
+        options=get_config_files(),
+        tooltip='Config File or Previous Run',
+    )
+    read_config.style = {'description_width': '%sch' % str(len(read_config.description) + 1)}
+    read_config.observe(read_config_cb, names='value') 
 
 tab_height = 'auto'
 tab_layout = widgets.Layout(width='auto',height=tab_height, overflow_y='scroll',)   # border='2px solid black',
@@ -498,6 +492,10 @@ if False:
     gui = widgets.VBox(children=[top_row, tabs, run_button.w])
     fill_gui_params(read_config.options['DEFAULT'])
 else:
+    cpp_output = widgets.Output()
+    acc = widgets.Accordion(children=[cpp_output])
+    acc.set_title(0, 'Output')
+
     top_row = widgets.HBox(children=[tool_title])
     gui = widgets.VBox(children=[top_row, tabs, run_button])
     fill_gui_params("../data/PhysiCell_settings.xml")
@@ -507,16 +505,16 @@ else:
 output_dir = "tmpdir"
 # svg.update(output_dir)
 
-sub.update_dropdown_fields("../data")   # WARNING: generates multiple "<Figure size...>" stdout!
+sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size...>" stdout!
 
 # print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
 # print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
 #sub.update_params(config_tab)
 
 # The file is not being PhysiCell_settings.xml found in Colab environment so we need to add this
-config_file_path = os.path.join('../data', 'PhysiCell_settings.xml')
-if not os.path.isfile(config_file_path):
-    raise FileNotFoundError(f"No such file or directory: '{config_file_path}'")
-fill_gui_params(config_file_path)
-output_dir = "tmpdir"
-sub.update_dropdown_fields("data")
+# config_file_path = os.path.join('../data', 'PhysiCell_settings.xml')
+# if not os.path.isfile(config_file_path):
+#     raise FileNotFoundError(f"No such file or directory: '{config_file_path}'")
+# fill_gui_params(config_file_path)
+# output_dir = "tmpdir"
+# sub.update_dropdown_fields("data")
