@@ -399,19 +399,29 @@ def run_button_cb(s):
 #    new_config_file = full_xml_filename
     # print("new_config_file = ", new_config_file)
 #    write_config_file(new_config_file)
+    os.chdir(homedir)
 
-    tdir = "tmpdir"
+    os.system('rm -rf tmpdir*')
+    if os.path.isdir('tmpdir'):
+        # something on NFS causing issues...
+        tname = tempfile.mkdtemp(suffix='.bak', prefix='tmpdir_', dir='.')
+        shutil.move('tmpdir', tname)
+    os.makedirs('tmpdir')
+
+    # write the default config file to tmpdir
+    new_config_file = "tmpdir/config.xml"  # use Path; work on Windows?
+    write_config_file(new_config_file)  
+
+    tdir = os.path.abspath('tmpdir')
+    os.chdir(tdir)  # operate from tmpdir; temporary output goes here.  may be copied to cache later
+    # svg.update(tdir)
+    # sub.update_params(config_tab)
     sub.update(tdir)
-
-    executable_path = os.path.abspath(os.path.join('..', 'bin', 'myproj'))
-    if not os.path.isfile(executable_path):
-        raise FileNotFoundError(f"No such file or directory: '{executable_path}'")
 
     run_button.description = "WAIT..."
     subprocess.run(["../bin/myproj", "config.xml"])
     sub.max_frames.value = int(config_tab.tmax.value / config_tab.svg_interval.value)    # 42
     run_button.description = "Run"
-
 
     # os.chdir(homedir)
 
@@ -442,7 +452,7 @@ if nanoHUB_flag:
     run_button = Submit(label='Run',
                        start_func=run_sim_func,
                         done_func=run_done_func,
-                        cachename='Motility_Training_App',
+                        cachename='Death_Models_Training',
                         showcache=False,
                         outcb=outcb)
 else:
