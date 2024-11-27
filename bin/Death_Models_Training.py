@@ -507,7 +507,7 @@ else:
 output_dir = "tmpdir"
 # svg.update(output_dir)
 
-sub.update_dropdown_fields("data")   # WARNING: generates multiple "<Figure size...>" stdout!
+sub.update_dropdown_fields("../data")   # WARNING: generates multiple "<Figure size...>" stdout!
 
 # print('config_tab.svg_interval.value= ',config_tab.svg_interval.value )
 # print('config_tab.mcds_interval.value= ',config_tab.mcds_interval.value )
