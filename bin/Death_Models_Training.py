@@ -450,7 +450,7 @@ def run_button_cb(s):
         sub.update(tdir)
 
         run_button.description = "WAIT..."
-        path = "/content/Motility_Training_App/bin/myproj"
+        path = "/content/Death_Models_Training/bin/myproj"
         process = subprocess.Popen([path, "config.xml"],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
