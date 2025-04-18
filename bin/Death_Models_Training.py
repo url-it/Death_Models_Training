@@ -399,6 +399,19 @@ def outcb(s):
         sub.update()
     return s
 
+def find(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+        
+myprojPath = find("myproj", os.getcwd())
+if myprojPath:
+    subprocess.run(["chmod", "+x", myprojPath], check=True)
+    print(f"Executable permissions granted for: {myprojPath}")
+else:
+    print("Error: 'myproj' file not found in the specified path.")
+
+
 
 def run_button_cb(s):
     """
